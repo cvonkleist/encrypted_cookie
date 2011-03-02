@@ -2,7 +2,7 @@ require 'rubygems'
 require 'rake'
 require 'echoe'
 
-Echoe.new('encrypted_cookie', '0.0.1') do |p|
+Echoe.new('encrypted_cookie', '0.0.2') do |p|
   p.description    = "Encrypted session cookies for Rack"
   p.url            = "http://github.com/cvonkleist/encrypted_cookie"
   p.author         = "Christian von Kleist"

@@ -1,4 +1,7 @@
-Rakefile
-encrypted_cookie_spec.rb
-lib/encrypted_cookie.rb
 Manifest
+README.markdown
+Rakefile
+encrypted_cookie.gemspec
+lib/encrypted_cookie.rb
+spec/encrypted_cookie_spec.rb
+test/demo.rb
