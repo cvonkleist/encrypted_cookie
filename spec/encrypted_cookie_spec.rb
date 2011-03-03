@@ -81,6 +81,19 @@ describe EncryptedApp do
 
     lambda { plaintext = (aes.update(crypted_text) << aes.final) }.should raise_error("bad decrypt")
   end
+  it "should reset the session if someone messes with the crypted data" do
+    get '/set/foo/bar'
+    last_response.body.should == 'all set'
+    get '/'
+    last_response.body.should == 'session: {"foo"=>"bar"}'
+
+    # mess with the session data
+    debugger
+
+    rack_mock_session.cookie_jar.instance_variable_get(:@cookies).first.instance_variable_set(:@name_and_value, 'rack.session=lkjsdlfkjsd')
+    get '/'
+    last_response.body.should == 'session: {}'
+  end
 end
 
 describe UnencryptedApp do

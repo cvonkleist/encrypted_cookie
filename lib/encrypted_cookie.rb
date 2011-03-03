@@ -19,9 +19,11 @@ module Rack
         session_data = request.cookies[@key]
 
         if session_data
-          session_data = decrypt(session_data)
-          session_data, digest = session_data.split("--")
-          session_data = nil  unless digest == generate_hmac(session_data)
+          #begin
+            session_data = decrypt(session_data)
+            session_data, digest = session_data.split("--")
+            session_data = nil  unless digest == generate_hmac(session_data)
+          #rescue OpenSSL::Cipher::Cipher
         end
 
         begin
