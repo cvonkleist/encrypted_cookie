@@ -1,4 +1,4 @@
-## Encrypted session cookies for Rack
+## Encrypted session cookies for Rack (and therefore Sinatra)
 
 The `encrypted_cookie` gem provides 128-bit-AES-encrypted, tamper-proof cookies
 for Rack through the class `Rack::Session::EncryptedCookie`.
