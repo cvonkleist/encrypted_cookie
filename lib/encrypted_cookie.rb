@@ -47,11 +47,10 @@ module Rack
         session_data = request.cookies[@key]
 
         if session_data
-          #begin
-            session_data = decrypt(session_data)
+          if session_data = decrypt(session_data)
             session_data, digest = session_data.split("--")
-            session_data = nil  unless digest == generate_hmac(session_data)
-          #rescue OpenSSL::Cipher::Cipher
+            session_data = nil unless digest == generate_hmac(session_data)
+          end
         end
 
         begin
@@ -93,18 +92,29 @@ module Rack
       def encrypt(str)
         aes = OpenSSL::Cipher::Cipher.new('aes-128-cbc').encrypt
         aes.key = @secret
-        salt = OpenSSL::Random.random_bytes(aes.key_len)
         iv = OpenSSL::Random.random_bytes(aes.iv_len)
+        aes.iv = iv
         [iv + (aes.update(str) << aes.final)].pack('m0')
       end
 
+      # decrypts string. returns nil if an error occurs
+      #
+      # returns nil if openssl raises an error during decryption (likely
+      # someone is tampering with the session data, or the sinatra user was
+      # previously using Cookie and has just switched to EncryptedCookie), and
+      # will also return nil if the text to decrypt is too short to possibly be
+      # good aes data.
       def decrypt(str)
         str = str.unpack('m0').first
         aes = OpenSSL::Cipher::Cipher.new('aes-128-cbc').decrypt
         aes.key = @secret
         iv = str[0, aes.iv_len]
+        aes.iv = iv
         crypted_text = str[aes.iv_len..-1]
+        return nil if crypted_text.nil? || iv.nil?
         aes.update(crypted_text) << aes.final
+      rescue
+        nil
       end
     end
   end

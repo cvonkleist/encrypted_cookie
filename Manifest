@@ -3,5 +3,4 @@ README.markdown
 Rakefile
 encrypted_cookie.gemspec
 lib/encrypted_cookie.rb
-pkg/encrypted_cookie-0.0.2.gem
 spec/encrypted_cookie_spec.rb

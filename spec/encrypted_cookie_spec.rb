@@ -56,7 +56,7 @@ describe EncryptedApp do
     str = CGI.unescape(data).unpack('m0').first
     aes = OpenSSL::Cipher::Cipher.new('aes-128-cbc').decrypt
     aes.key = 'foo' * 10
-    iv = str[0, aes.iv_len]
+    aes.iv = str[0, aes.iv_len]
     crypted_text = str[aes.iv_len..-1]
 
     plaintext = (aes.update(crypted_text) << aes.final)
@@ -86,7 +86,15 @@ describe EncryptedApp do
     get '/'
     last_response.body.should == 'session: {"foo"=>"bar"}'
 
-    rack_mock_session.cookie_jar.instance_variable_get(:@cookies).first.instance_variable_set(:@name_and_value, 'rack.session=lkjsdlfkjsd')
+    # tamper with the cookie (too short to be aes data)
+    rack_mock_session.cookie_jar << Rack::Test::Cookie.new('rack.session=foo', URI.parse('http://example.org//'))
+
+    get '/'
+    last_response.body.should == 'session: {}'
+
+    # tamper with the cookie (long enough to attempt aes decryption)
+    rack_mock_session.cookie_jar << Rack::Test::Cookie.new('rack.session=foobarbaz', URI.parse('http://example.org//'))
+
     get '/'
     last_response.body.should == 'session: {}'
   end
