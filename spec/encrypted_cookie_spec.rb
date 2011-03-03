@@ -1,7 +1,6 @@
 require 'rack/test'
 require 'sinatra'
 require 'rspec'
-require 'ruby-debug'
 require 'cgi'
 require File.dirname(__FILE__) + '/../lib/encrypted_cookie'
 
@@ -86,9 +85,6 @@ describe EncryptedApp do
     last_response.body.should == 'all set'
     get '/'
     last_response.body.should == 'session: {"foo"=>"bar"}'
-
-    # mess with the session data
-    debugger
 
     rack_mock_session.cookie_jar.instance_variable_get(:@cookies).first.instance_variable_set(:@name_and_value, 'rack.session=lkjsdlfkjsd')
     get '/'

@@ -1,9 +1,29 @@
 require 'openssl'
-require 'rack/session/cookie'
+require 'rack/request'
+require 'rack/response'
 
 module Rack
+
   module Session
-    class EncryptedCookie < Cookie
+
+    # Rack::Session::EncryptedCookie provides AES-128-encrypted, tamper-proof
+    # cookie-based session management.
+    #
+    # The session is Marshal'd, HMAC'd, and encrypted.
+    #
+    # Example:
+    #
+    #     use Rack::Session::EncryptedCookie,
+    #       :secret => 'change_me',
+    #       :key => 'rack.session',
+    #       :domain => 'foo.com',
+    #       :path => '/',
+    #       :expire_after => 2592000
+    #
+    #     All parameters are optional except :secret.
+
+    class EncryptedCookie
+
       def initialize(app, options={})
         @app = app
         @key = options[:key] || "rack.session"
@@ -13,6 +33,14 @@ module Rack
           :path => "/",
           :expire_after => nil}.merge(options)
       end
+
+      def call(env)
+        load_session(env)
+        status, headers, body = @app.call(env)
+        commit_session(env, status, headers, body)
+      end
+
+      private
 
       def load_session(env)
         request = Rack::Request.new(env)
@@ -58,7 +86,9 @@ module Rack
         [status, headers, body]
       end
 
-      private
+      def generate_hmac(data)
+        OpenSSL::HMAC.hexdigest(OpenSSL::Digest::SHA1.new, @secret, data)
+      end
 
       def encrypt(str)
         aes = OpenSSL::Cipher::Cipher.new('aes-128-cbc').encrypt
