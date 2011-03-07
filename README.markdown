@@ -31,5 +31,6 @@ immediately be reset to `{}` (empty hash).
 
 ## Generating a good secret
 
-    require 'openssl'
-    puts OpenSSL::Random.random_bytes(16).inspect
+Run this in a terminal and paste the output into your script:
+
+    $ ruby -ropenssl -e "puts OpenSSL::Random.random_bytes(16).inspect"
