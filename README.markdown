@@ -1,6 +1,6 @@
 ## Encrypted session cookies for Rack (and therefore Sinatra)
 
-The `encrypted_cookie` gem provides 128-bit-AES-encrypted, tamper-proof cookies
+The `encrypted_cookie` gem provides 256-bit-AES-encrypted, tamper-proof cookies
 for Rack through the class `Rack::Session::EncryptedCookie`.
 
 ## How to use encrypted\_cookie
@@ -20,17 +20,18 @@ Sinatra example:
       "session: " + session.inspect
     end
 
-_*_ Your `:secret` must be at least 16 bytes long and should be really random.
+_*_ Your `:secret` must be at least 32 bytes long and should be really random.
+Don't use a password or passphrase, generate something random (see below).
 
 ## Encryption and integrity protection
 
-The cookie encryption method is 128-bit AES (with salt). Additionally, the
-cookies are integrity protected with Rack's built-in HMAC support, which means
-that if a user tampers with their cookie in any way, their session will
-immediately be reset to `{}` (empty hash).
+The cookie is encrypted with 256-bit AES in CBC mode (with random IV).  The
+encrypted cookie is then signed with a HMAC, to prevent tampering and chosen
+ciphertext attacks.  Any attempt at tampering with the cookie will reset the
+user to `{}` (empty hash).
 
 ## Generating a good secret
 
 Run this in a terminal and paste the output into your script:
 
-    $ ruby -ropenssl -e "puts OpenSSL::Random.random_bytes(16).inspect"
+    $ ruby -rsecurerandom -e "puts SecureRandom.hex(32)"
