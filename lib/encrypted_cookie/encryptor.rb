@@ -25,10 +25,10 @@ module Rack
           # for encryption and authentication.  This also allows us to use all
           # of the entropy in a long key (e.g. 64 hex bytes) when straight
           # assignement would could result in assigning a key with a much
-          # reduced key space.  Also, the personalisation stringsfurther help
+          # reduced key space.  Also, the personalisation strings further help
           # reduce the possibility of key reuse by ensuring it should be unique
           # to this gem, even with shared secrets.
-          @encryption_key     = hmac(secret, "EncryptedCookie Encyption")
+          @encryption_key     = hmac(secret, "EncryptedCookie Encryption")
           @authentication_key = hmac(secret, "EncryptedCookie Authentication")
         end
 
@@ -90,8 +90,8 @@ module Rack
 
         # Encrypt
         #
-        # Encrypts the given message with a random IV, then returns the message
-        # with the ciphertext prepended.
+        # Encrypts the given message with a random IV, then returns the ciphertext
+        # with the IV prepended.
         def encrypt_message(message)
           aes = OpenSSL::Cipher::Cipher.new(@cipher).encrypt
           aes.key = @encryption_key
@@ -104,7 +104,7 @@ module Rack
         #
         # Pulls the IV off the front of the message and decrypts.  Catches
         # OpenSSL errors and returns nil.  But this should never happen, as the
-        # verify method should catch all corrupted ciphertexts!
+        # verify method should catch all corrupted ciphertexts.
         def decrypt_ciphertext(ciphertext)
           aes = OpenSSL::Cipher::Cipher.new(@cipher).decrypt
           aes.key = @encryption_key
