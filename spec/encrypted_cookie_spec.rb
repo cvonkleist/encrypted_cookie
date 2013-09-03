@@ -1,16 +1,28 @@
 require 'rack/test'
-require 'sinatra'
+require 'sinatra/base'
 require 'rspec'
 require 'cgi'
-require File.dirname(__FILE__) + '/../lib/encrypted_cookie'
+require './lib/encrypted_cookie'
 
 include Rack::Session
 
+
+module Helper
+  def unpack_cookie
+    data = last_response.headers['Set-Cookie'][/rack.session=(.*?);/, 1]
+    data = data.split('--').first
+    str = CGI.unescape(data).unpack('m').first
+  end
+end
+
+
 RSpec.configure do |conf|
   conf.include Rack::Test::Methods
+  conf.include Helper
 end
 
 class EncryptedApp < Sinatra::Application
+  disable :show_exceptions
   use Rack::Session::EncryptedCookie, :secret => 'foo' * 10
   get '/' do
     "session: " + session.inspect
@@ -23,8 +35,10 @@ end
 
 # this app has cookie integrity protection, but not encryption
 class UnencryptedApp < Sinatra::Application
+  disable :show_exceptions
   use Rack::Session::Cookie, :secret => 'foo' * 10
   get '/' do
+    session[:foo] = 'bar'
     "session: " + session.inspect
   end
 end
@@ -51,18 +65,6 @@ describe EncryptedApp do
     get '/'
     last_response.body.should == 'session: {"foo"=>"bar"}'
     last_response.headers['Set-Cookie'].should_not include("BAh7AA")
-
-    data = last_response.headers['Set-Cookie'][/rack.session=(.*?);/, 1]
-    str = CGI.unescape(data).unpack('m0').first
-    aes = OpenSSL::Cipher::Cipher.new('aes-128-cbc').decrypt
-    aes.key = 'foo' * 10
-    aes.iv = str[0, aes.iv_len]
-    crypted_text = str[aes.iv_len..-1]
-
-    plaintext = (aes.update(crypted_text) << aes.final)
-    base64_marshal_data, hmac = plaintext.split('--')
-    session_hash = Marshal.load(base64_marshal_data.unpack('m0').first)
-    session_hash.should == {"foo" => "bar"}
   end
   it "should make encrypted session data that can't be decrypted with the wrong key" do
     get '/set/foo/bar'
@@ -71,12 +73,11 @@ describe EncryptedApp do
     last_response.body.should == 'session: {"foo"=>"bar"}'
     last_response.headers['Set-Cookie'].should_not include("BAh7AA")
 
-    data = last_response.headers['Set-Cookie'][/rack.session=(.*?);/, 1]
-    str = CGI.unescape(data).unpack('m0').first
+    data = unpack_cookie
     aes = OpenSSL::Cipher::Cipher.new('aes-128-cbc').decrypt
     aes.key = 'bar' * 10
-    iv = str[0, aes.iv_len]
-    crypted_text = str[aes.iv_len..-1]
+    iv = data[0, aes.iv_len]
+    crypted_text = data[aes.iv_len..-1]
 
     lambda { plaintext = (aes.update(crypted_text) << aes.final) }.should raise_error("bad decrypt")
   end
@@ -106,7 +107,7 @@ describe UnencryptedApp do
   end
   it "should include unencrypted marshal'd data" do
     get '/'
-    last_response.body.should == 'session: {}'
-    last_response.headers['Set-Cookie'].should include("BAh7AA")
+    cookie = Marshal.load(unpack_cookie)
+    cookie['foo'].should == 'bar'
   end
 end

@@ -1,12 +1,13 @@
 require 'openssl'
 require 'rack/request'
 require 'rack/response'
+require 'encrypted_cookie/encryptor'
 
 module Rack
 
   module Session
 
-    # Rack::Session::EncryptedCookie provides AES-128-encrypted, tamper-proof
+    # Rack::Session::EncryptedCookie provides AES-256-encrypted, tamper-proof
     # cookie-based session management.
     #
     # The session is Marshal'd, HMAC'd, and encrypted.
@@ -21,7 +22,10 @@ module Rack
     #       :expire_after => 2592000
     #
     #     All parameters are optional except :secret.
-
+    #
+    #     Note that you shouldn't trust the expire_after parameter in the cookie
+    #     for session expiry as that can be altered by the recipient.  Instead,
+    #     store a timestamp in the session
     class EncryptedCookie
 
       def initialize(app, options={})
@@ -32,6 +36,7 @@ module Rack
         @default_options = {:domain => nil,
           :path => "/",
           :expire_after => nil}.merge(options)
+        @encryptor = Encryptor.new(@secret)
       end
 
       def call(env)
@@ -47,14 +52,10 @@ module Rack
         session_data = request.cookies[@key]
 
         if session_data
-          if session_data = decrypt(session_data)
-            session_data, digest = session_data.split("--")
-            session_data = nil unless digest == generate_hmac(session_data)
-          end
+          session_data = @encryptor.decrypt(session_data)
         end
 
         begin
-          session_data = session_data.unpack("m*").first
           session_data = Marshal.load(session_data)
           env["rack.session"] = session_data
         rescue
@@ -66,11 +67,7 @@ module Rack
 
       def commit_session(env, status, headers, body)
         session_data = Marshal.dump(env["rack.session"])
-        session_data = [session_data].pack("m*")
-
-        session_data = "#{session_data}--#{generate_hmac(session_data)}"
-
-        session_data = encrypt(session_data)
+        session_data = @encryptor.encrypt(session_data)
 
         if session_data.size > (4096 - @key.size)
           env["rack.errors"].puts("Warning! Rack::Session::Cookie data size exceeds 4K. Content dropped.")
@@ -83,38 +80,6 @@ module Rack
         end
 
         [status, headers, body]
-      end
-
-      def generate_hmac(data)
-        OpenSSL::HMAC.hexdigest(OpenSSL::Digest::SHA1.new, @secret, data)
-      end
-
-      def encrypt(str)
-        aes = OpenSSL::Cipher::Cipher.new('aes-128-cbc').encrypt
-        aes.key = @secret
-        iv = OpenSSL::Random.random_bytes(aes.iv_len)
-        aes.iv = iv
-        [iv + (aes.update(str) << aes.final)].pack('m0')
-      end
-
-      # decrypts string. returns nil if an error occurs
-      #
-      # returns nil if openssl raises an error during decryption (likely
-      # someone is tampering with the session data, or the sinatra user was
-      # previously using Cookie and has just switched to EncryptedCookie), and
-      # will also return nil if the text to decrypt is too short to possibly be
-      # good aes data.
-      def decrypt(str)
-        str = str.unpack('m0').first
-        aes = OpenSSL::Cipher::Cipher.new('aes-128-cbc').decrypt
-        aes.key = @secret
-        iv = str[0, aes.iv_len]
-        aes.iv = iv
-        crypted_text = str[aes.iv_len..-1]
-        return nil if crypted_text.nil? || iv.nil?
-        aes.update(crypted_text) << aes.final
-      rescue
-        nil
       end
     end
   end
