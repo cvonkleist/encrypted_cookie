@@ -35,3 +35,7 @@ user to `{}` (empty hash).
 Run this in a terminal and paste the output into your script:
 
     $ ruby -rsecurerandom -e "puts SecureRandom.hex(32)"
+
+# Thanks
+
+- Thanks, [@namelessjon](https://github.com/namelessjon), for the massive crypto improvements!
