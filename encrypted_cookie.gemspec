@@ -23,19 +23,19 @@ Gem::Specification.new do |s|
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
       s.add_runtime_dependency(%q<rack>, ["~> 1.1"])
-      s.add_development_dependency(%q<rack-test>, [">= 0"])
-      s.add_development_dependency(%q<sinatra>, [">= 0"])
-      s.add_development_dependency(%q<rspec>, [">= 0"])
+      s.add_development_dependency(%q<rack-test>, ["~> 0.6.2"])
+      s.add_development_dependency(%q<sinatra>, ["~> 1.3.4"])
+      s.add_development_dependency(%q<rspec>, ["~> 2.14.1"])
     else
       s.add_dependency(%q<rack>, ["~> 1.1"])
-      s.add_dependency(%q<rack-test>, [">= 0"])
-      s.add_dependency(%q<sinatra>, [">= 0"])
-      s.add_dependency(%q<rspec>, [">= 0"])
+      s.add_dependency(%q<rack-test>, ["~> 0.6.2"])
+      s.add_dependency(%q<sinatra>, ["~> 1.3.4"])
+      s.add_dependency(%q<rspec>, ["~> 2.14.1"])
     end
   else
     s.add_dependency(%q<rack>, ["~> 1.1"])
-    s.add_dependency(%q<rack-test>, [">= 0"])
-    s.add_dependency(%q<sinatra>, [">= 0"])
-    s.add_dependency(%q<rspec>, [">= 0"])
+    s.add_dependency(%q<rack-test>, ["~> 0.6.2"])
+    s.add_dependency(%q<sinatra>, ["~> 1.3.4"])
+    s.add_dependency(%q<rspec>, ["~> 2.14.1"])
   end
 end
