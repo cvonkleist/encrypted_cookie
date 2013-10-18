@@ -46,7 +46,7 @@ end
 describe EncryptedCookie do
   it 'should fail if no secret is specified' do
     lambda { EncryptedCookie.new(nil) }.should raise_error(/A secret is required/)
-    lambda { EncryptedCookie.new(nil, :secret => 'foo') }.should_not raise_error(/A secret is required/)
+    lambda { EncryptedCookie.new(nil, :secret => 'foo') }.should_not raise_error
   end
 end
 

@@ -8,5 +8,6 @@ Echoe.new('encrypted_cookie', '0.0.4') do |p|
   p.author         = "Christian von Kleist"
   p.email          = "cvonkleist at-a-place-called gmail.com"
   p.ignore_pattern = ["tmp/*", "script/*"]
-  p.development_dependencies = []
+  p.runtime_dependencies = ["rack >=1.0"]
+  p.development_dependencies = ["rack-test", "sinatra", "rspec"]
 end

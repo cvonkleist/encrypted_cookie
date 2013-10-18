@@ -36,6 +36,17 @@ Run this in a terminal and paste the output into your script:
 
     $ ruby -rsecurerandom -e "puts SecureRandom.hex(32)"
 
+## Developing
+
+To get the specs running:
+
+```bash
+$ cd path-to-clone
+$ gem install bundler # if not already installed
+$ bundle install
+$ bundle exec rspec
+```
+
 # Thanks
 
 - Thanks, [@namelessjon](https://github.com/namelessjon), for the massive crypto improvements!
