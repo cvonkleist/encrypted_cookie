@@ -108,7 +108,15 @@ describe EncryptedApp do
     last_response.body.should == 'all set'
     get '/'
     last_response.body.should == 'session: {"foo"=>"bar"}'
+    sleep 0.08
+    get '/'
+    last_response.body.should == 'session: {"foo"=>"bar"}'
+    sleep 0.08
+    get '/'
+    last_response.body.should == 'session: {"foo"=>"bar"}'
     sleep 0.1
+    get '/'
+    last_response.body.should == 'session: {}'
     get '/timeout/0'
     last_response.body.should == 'timeout set'
     get '/'
