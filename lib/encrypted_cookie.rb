@@ -56,34 +56,39 @@ module Rack
 
       private
 
+      def remove_expiration(session_data)
+        expires = session_data.delete(EXPIRES)
+        if expires and expires < Time.now
+          session_data.clear
+        end
+      end
+
       def load_session(env)
         request = Rack::Request.new(env)
-        session_data = request.cookies[@key]
-
-        if session_data
-          session_data = @encryptor.decrypt(session_data)
-        end
-
-        begin
-          session_data = Marshal.load(session_data)
-          if expires = session_data.delete(EXPIRES)
-            session_data = Hash.new if expires < Time.now
-          end
-          env["rack.session"] = session_data
-        rescue
-          env["rack.session"] = Hash.new
-        end
-
         env["rack.session.options"] = @default_options.dup
+
+        session_data = request.cookies[@key]
+        session_data = @encryptor.decrypt(session_data)
+        session_data = Marshal.load(session_data)
+        remove_expiration(session_data)
+
+        env["rack.session"] = session_data
+      rescue
+        env["rack.session"] = Hash.new
+      end
+
+      def add_expiration(session_data, options)
+        if options[:time_to_live] && !session_data.key?(EXPIRES)
+          expires = Time.now + options[:time_to_live]
+          session_data.merge!({EXPIRES => expires})
+        end
       end
 
       def commit_session(env, status, headers, body)
-        session_data = env["rack.session"]
         options = env["rack.session.options"]
-        if options[:time_to_live] && !session_data.key?(EXPIRES)
-          expires = Time.now + options[:time_to_live]
-          session_data = session_data.merge({EXPIRES => expires})
-        end
+
+        session_data = env["rack.session"]
+        add_expiration(session_data, options)
         session_data = Marshal.dump(session_data)
         session_data = @encryptor.encrypt(session_data)
 
