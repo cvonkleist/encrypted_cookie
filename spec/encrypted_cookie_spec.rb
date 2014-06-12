@@ -23,9 +23,13 @@ end
 
 class EncryptedApp < Sinatra::Application
   disable :show_exceptions
-  use Rack::Session::EncryptedCookie, :secret => 'foo' * 10
+  use Rack::Session::EncryptedCookie, :secret => 'foo' * 10, :time_to_live => 0.1
   get '/' do
     "session: " + session.inspect
+  end
+  get '/timeout/:value' do
+    session[Rack::Session::EncryptedCookie::EXPIRES] = Time.now + params[:value].to_i
+    "timeout set"
   end
   get '/set/:key/:value' do
     session[params[:key]] = params[:value]
@@ -96,6 +100,25 @@ describe EncryptedApp do
     # tamper with the cookie (long enough to attempt aes decryption)
     rack_mock_session.cookie_jar << Rack::Test::Cookie.new('rack.session=foobarbaz', URI.parse('http://example.org//'))
 
+    get '/'
+    last_response.body.should == 'session: {}'
+  end
+  it "should reset the session on timeout" do
+    get '/set/foo/bar'
+    last_response.body.should == 'all set'
+    get '/'
+    last_response.body.should == 'session: {"foo"=>"bar"}'
+    sleep 0.08
+    get '/'
+    last_response.body.should == 'session: {"foo"=>"bar"}'
+    sleep 0.08
+    get '/'
+    last_response.body.should == 'session: {"foo"=>"bar"}'
+    sleep 0.1
+    get '/'
+    last_response.body.should == 'session: {}'
+    get '/timeout/0'
+    last_response.body.should == 'timeout set'
     get '/'
     last_response.body.should == 'session: {}'
   end
