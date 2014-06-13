@@ -1,4 +1,3 @@
-require 'openssl'
 require 'rack/request'
 require 'rack/response'
 require 'encrypted_cookie/encryptor'
