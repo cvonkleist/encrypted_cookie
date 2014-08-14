@@ -9,7 +9,7 @@ module Rack
     # Rack::Session::EncryptedCookie provides AES-256-encrypted, tamper-proof
     # cookie-based session management.
     #
-    # The session is Marshal'd, HMAC'd, and encrypted.
+    # The session is Marshal'd, encrypted and HMAC'd.
     #
     # Example:
     #
