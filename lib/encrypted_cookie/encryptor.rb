@@ -28,8 +28,8 @@ module Rack
           # reduced key space.  Also, the personalisation strings further help
           # reduce the possibility of key reuse by ensuring it should be unique
           # to this gem, even with shared secrets.
-          @encryption_key     = hmac(secret, "EncryptedCookie Encryption")
-          @authentication_key = hmac(secret, "EncryptedCookie Authentication")
+          @encryption_key     = hmac("EncryptedCookie Encryption",     secret)
+          @authentication_key = hmac("EncryptedCookie Authentication", secret)
         end
 
         # Encrypts message
