@@ -2,7 +2,6 @@ require 'rack/request'
 require 'rack/response'
 require 'encrypted_cookie/encryptor'
 require 'oj'
-require 'benchmark'
 
 module Rack
 
