@@ -28,8 +28,8 @@ module Rack
           # reduced key space.  Also, the personalisation strings further help
           # reduce the possibility of key reuse by ensuring it should be unique
           # to this gem, even with shared secrets.
-          @encryption_key     = hmac("EncryptedCookie Encryption",     secret)
-          @authentication_key = hmac("EncryptedCookie Authentication", secret)
+          @encryption_key     = hmac('EncryptedCookie Encryption',     secret)
+          @authentication_key = hmac('EncryptedCookie Authentication', secret)
         end
 
         # Encrypts message
@@ -41,12 +41,12 @@ module Rack
           # encrypt the message
           encrypted = encrypt_message(message)
 
-          [authenticate_message(encrypted) +   encrypted].pack('m0')
+          [authenticate_message(encrypted) + encrypted].pack('m0')
         end
 
         # decrypts base64 encoded ciphertext
         #
-        # First, it checks the message tag and returns nil if that fails to verify.
+        # First, it checks the message tag and returns nil if that fails.
         # Otherwise, the data is passed on to the AES function for decryption.
         def decrypt(ciphertext)
           ciphertext = ciphertext.unpack('m').first
@@ -54,11 +54,8 @@ module Rack
           ciphertext = ciphertext[hmac_length..-1]
 
           # make sure we actually had enough data for the tag too.
-          if tag && ciphertext && verify_message(tag, ciphertext)
-            decrypt_ciphertext(ciphertext)
-          else
-            nil
-          end
+          return unless tag && ciphertext && verify_message(tag, ciphertext)
+          decrypt_ciphertext(ciphertext)
         end
 
         private
@@ -81,8 +78,8 @@ module Rack
 
         # verifies the message
         #
-        # This does its best to be constant time, by use of the rack secure compare
-        # function.
+        # This does its best to be constant time, by use of the rack secure
+        # compare function.
         def verify_message(tag, message)
           own_tag = authenticate_message(message)
           Rack::Utils.secure_compare(tag, own_tag)
@@ -90,8 +87,8 @@ module Rack
 
         # Encrypt
         #
-        # Encrypts the given message with a random IV, then returns the ciphertext
-        # with the IV prepended.
+        # Encrypts the given message with a random IV,
+        # then returns the ciphertext with the IV prepended.
         def encrypt_message(message)
           aes = OpenSSL::Cipher::Cipher.new(@cipher).encrypt
           aes.key = @encryption_key
@@ -116,7 +113,6 @@ module Rack
         rescue
           nil
         end
-
       end
     end
   end

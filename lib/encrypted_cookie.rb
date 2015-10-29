@@ -3,9 +3,7 @@ require 'rack/response'
 require 'encrypted_cookie/encryptor'
 
 module Rack
-
   module Session
-
     # Rack::Session::EncryptedCookie provides AES-256-encrypted, tamper-proof
     # cookie-based session management.
     #
@@ -32,18 +30,21 @@ module Rack
     #     for session expiry as that can be altered by the recipient. Instead,
     #     use time_to_live which is server side check.
     class EncryptedCookie
-
       EXPIRES = '_encrypted_cookie_expires_'
 
-      def initialize(app, options={})
+      def initialize(app, options = {})
         @app = app
-        @key = options[:key] || "rack.session"
+        @key = options[:key] || 'rack.session'
         @secret = options[:secret]
-        fail "Error! A secret is required to use encrypted cookies. Do something like this:\n\nuse Rack::Session::EncryptedCookie, :secret => YOUR_VERY_LONG_VERY_RANDOM_SECRET_KEY_HERE" unless @secret
-        @default_options = {:domain => nil,
-          :path => "/",
-          :time_to_live => 1800,
-          :expire_after => nil}.merge(options)
+        fail 'Error! A secret is required to use encrypted cookies. Do ' \
+             'something like this:\n\nuse Rack::Session::EncryptedCookie, ' \
+             'secret: YOUR_VERY_LONG_VERY_RANDOM_SECRET_KEY_HERE' unless @secret
+        @default_options = {
+          domain: nil,
+          path: '/',
+          time_to_live: 1800,
+          expire_after: nil
+        }.merge(options)
         @encryptor = Encryptor.new(@secret)
       end
 
@@ -57,46 +58,45 @@ module Rack
 
       def remove_expiration(session_data)
         expires = session_data.delete(EXPIRES)
-        if expires and expires < Time.now
-          session_data.clear
-        end
+        session_data.clear if expires && expires < Time.now
       end
 
       def load_session(env)
         request = Rack::Request.new(env)
-        env["rack.session.options"] = @default_options.dup
+        env['rack.session.options'] = @default_options.dup
 
         session_data = request.cookies[@key]
         session_data = @encryptor.decrypt(session_data)
         session_data = Marshal.load(session_data)
         remove_expiration(session_data)
 
-        env["rack.session"] = session_data
+        env['rack.session'] = session_data
       rescue
-        env["rack.session"] = Hash.new
+        env['rack.session'] = {}
       end
 
       def add_expiration(session_data, options)
-        if options[:time_to_live] && !session_data.key?(EXPIRES)
-          expires = Time.now + options[:time_to_live]
-          session_data.merge!({EXPIRES => expires})
-        end
+        return unless options[:time_to_live] && !session_data.key?(EXPIRES)
+        expires = Time.now + options[:time_to_live]
+        session_data.merge!(EXPIRES => expires)
       end
 
       def commit_session(env, status, headers, body)
-        options = env["rack.session.options"]
-
-        session_data = env["rack.session"]
+        options = env['rack.session.options']
+        session_data = env['rack.session']
         add_expiration(session_data, options)
         session_data = Marshal.dump(session_data)
         session_data = @encryptor.encrypt(session_data)
 
         if session_data.size > (4096 - @key.size)
-          env["rack.errors"].puts("Warning! Rack::Session::Cookie data size exceeds 4K. Content dropped.")
+          env['rack.errors'].puts 'Warning! Rack::Session::Cookie data size ' \
+                                  'exceeds 4K. Content dropped.'
         else
-          cookie = Hash.new
+          cookie = {}
           cookie[:value] = session_data
-          cookie[:expires] = Time.now + options[:expire_after] unless options[:expire_after].nil?
+          unless options[:expire_after].nil?
+            cookie[:expires] = "#{Time.now} #{options[:expire_after]}"
+          end
           Utils.set_cookie_header!(headers, @key, cookie.merge(options))
         end
 
