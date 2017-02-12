@@ -93,7 +93,7 @@ module Rack
         # Encrypts the given message with a random IV, then returns the ciphertext
         # with the IV prepended.
         def encrypt_message(message)
-          aes = OpenSSL::Cipher::Cipher.new(@cipher).encrypt
+          aes = OpenSSL::Cipher.new(@cipher).encrypt
           aes.key = @encryption_key
           iv = aes.random_iv
           aes.iv = iv
@@ -106,7 +106,7 @@ module Rack
         # OpenSSL errors and returns nil.  But this should never happen, as the
         # verify method should catch all corrupted ciphertexts.
         def decrypt_ciphertext(ciphertext)
-          aes = OpenSSL::Cipher::Cipher.new(@cipher).decrypt
+          aes = OpenSSL::Cipher.new(@cipher).decrypt
           aes.key = @encryption_key
           iv = ciphertext[0, aes.iv_len]
           aes.iv = iv
