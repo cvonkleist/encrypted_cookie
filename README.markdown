@@ -49,4 +49,8 @@ $ bundle exec rspec
 
 # Thanks
 
-- Thanks, [@namelessjon](https://github.com/namelessjon), for the massive crypto improvements!
+- [@namelessjon](https://github.com/namelessjon) - Jon - For the massive crypto improvements!
+- [@mkristian](https://github.com/mkristian) - Christian Meier
+- [@danp](https://github.com/danp) - Dan Peterson
+- [@stmllr](https://github.com/stmllr) - Steffen Müller
+- [@andrhamm](https://github.com/andrhamm) - Andrew Hammond
