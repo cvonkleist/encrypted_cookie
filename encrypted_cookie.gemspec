@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.description = "Encrypted session cookies for Rack"
   s.email = "cvonkleist at-a-place-called gmail.com"
   s.extra_rdoc_files = ["README.markdown", "lib/encrypted_cookie.rb"]
-  s.files = ["Manifest", "README.markdown", "Rakefile", "encrypted_cookie.gemspec", "lib/encrypted_cookie.rb", "spec/encrypted_cookie_spec.rb"]
+  s.files = ["Manifest", "README.markdown", "Rakefile", "encrypted_cookie.gemspec", "lib/encrypted_cookie.rb", "lib/encrypted_cookie/encryptor.rb", "spec/encrypted_cookie_spec.rb"]
   s.homepage = "http://github.com/cvonkleist/encrypted_cookie"
   s.rdoc_options = ["--line-numbers", "--inline-source", "--title", "Encrypted_cookie", "--main", "README.markdown"]
   s.require_paths = ["lib"]
