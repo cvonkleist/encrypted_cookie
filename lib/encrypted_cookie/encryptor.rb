@@ -1,5 +1,5 @@
 require 'openssl'
-require 'rack/utils'
+
 module Rack
   module Session
     class EncryptedCookie
