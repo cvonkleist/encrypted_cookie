@@ -79,7 +79,7 @@ describe EncryptedApp do
 
     data = unpack_cookie
     aes = OpenSSL::Cipher.new('aes-128-cbc').decrypt
-    aes.key = 'bar' * 10
+    aes.key = '1234567890ABCDEF' # key must be 16 bytes
     iv = data[0, aes.iv_len]
     crypted_text = data[aes.iv_len..-1]
 
