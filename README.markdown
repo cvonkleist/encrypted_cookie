@@ -1,5 +1,7 @@
 ## Encrypted session cookies for Rack (and therefore Sinatra)
 
+![Ruby](https://github.com/cvonkleist/encrypted_cookie/workflows/Ruby/badge.svg)
+
 The `encrypted_cookie` gem provides 256-bit-AES-encrypted, tamper-proof cookies
 for Rack through the class `Rack::Session::EncryptedCookie`.
 
