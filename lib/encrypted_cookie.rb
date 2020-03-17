@@ -1,11 +1,8 @@
-require 'rack/request'
-require 'rack/response'
+require 'rack'
 require 'encrypted_cookie/encryptor'
 
 module Rack
-
   module Session
-
     # Rack::Session::EncryptedCookie provides AES-256-encrypted, tamper-proof
     # cookie-based session management.
     #
@@ -32,7 +29,6 @@ module Rack
     #     for session expiry as that can be altered by the recipient. Instead,
     #     use time_to_live which is server side check.
     class EncryptedCookie
-
       EXPIRES = '_encrypted_cookie_expires_'
 
       def initialize(app, options={})
