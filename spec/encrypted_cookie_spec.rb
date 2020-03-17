@@ -6,6 +6,7 @@ require './lib/encrypted_cookie'
 
 include Rack::Session
 
+TIME_TO_LIVE = 0.1
 
 module Helper
   def unpack_cookie
@@ -23,7 +24,7 @@ end
 
 class EncryptedApp < Sinatra::Application
   disable :show_exceptions
-  use Rack::Session::EncryptedCookie, :secret => 'foo' * 10, :time_to_live => 0.1
+  use Rack::Session::EncryptedCookie, :secret => 'foo' * 10, :time_to_live => ::TIME_TO_LIVE
   get '/' do
     "session: " + session.inspect
   end
@@ -114,7 +115,7 @@ describe EncryptedApp do
     sleep 0.08
     get '/'
     last_response.body.should == 'session: {"foo"=>"bar"}'
-    sleep 0.1
+    sleep ::TIME_TO_LIVE
     get '/'
     last_response.body.should == 'session: {}'
     get '/timeout/0'

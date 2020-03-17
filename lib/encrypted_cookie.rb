@@ -1,12 +1,13 @@
 require 'rack'
 require 'encrypted_cookie/encryptor'
+require 'oj'
 
 module Rack
   module Session
     # Rack::Session::EncryptedCookie provides AES-256-encrypted, tamper-proof
     # cookie-based session management.
     #
-    # The session is Marshal'd, encrypted and HMAC'd.
+    # The session is JSON'd, encrypted and HMAC'd.
     #
     # Example:
     #
@@ -64,7 +65,8 @@ module Rack
 
         session_data = request.cookies[@key]
         session_data = @encryptor.decrypt(session_data)
-        session_data = Marshal.load(session_data)
+        session_data = Oj.load(session_data)
+
         remove_expiration(session_data)
 
         env["rack.session"] = session_data
@@ -84,7 +86,7 @@ module Rack
 
         session_data = env["rack.session"]
         add_expiration(session_data, options)
-        session_data = Marshal.dump(session_data)
+        session_data = Oj.dump(session_data)
         session_data = @encryptor.encrypt(session_data)
 
         if session_data.size > (4096 - @key.size)
